@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F0EDE8">
+<title>Home chores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  height: 100%;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #F0EDE8;
+  color: #2C2A26;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+:root {
+  --bg: #F0EDE8;
+  --surface: #FAFAF8;
+  --raised: #FFFFFF;
+  --sage: #4A7C5F;
+  --sage-light: #E8F0EB;
+  --sage-mid: #9BBDA9;
+  --sage-dark: #2E5C42;
+  --amber: #C17F3A;
+  --amber-bg: #FBF0E2;
+  --amber-border: rgba(193,127,58,0.22);
+  --stone: #2C2A26;
+  --muted: #7A7670;
+  --muted-light: #B8B4AE;
+  --border: #E2DDD7;
+  --border-light: #EDE9E4;
+  --shadow-card: 0 1px 3px rgba(44,42,38,0.07), 0 4px 14px rgba(44,42,38,0.06);
+  --shadow-card-hover: 0 2px 6px rgba(44,42,38,0.1), 0 8px 24px rgba(44,42,38,0.09);
+  --shadow-nav: 0 -1px 0 rgba(44,42,38,0.06), 0 -4px 16px rgba(44,42,38,0.06);
+  --r-card: 18px;
+  --r-pill: 100px;
+  --r-sm: 8px;
+  --r-icon: 8px;
+}
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+}
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 16px 24px;
+  -webkit-overflow-scrolling: touch;
+}
+.view { display: none; }
+.view.active { display: block; }
+
+/* SVG icons */
+.ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ico svg { display: block; }
+
+/* top bar */
+.top-bar { padding: 52px 16px 0; background: var(--bg); }
+.header { padding: 16px 0 12px; }
+.day-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.date-headline {
+  font-family: 'Lora', Georgia, serif;
+  font-size: 34px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.5px;
+  color: var(--stone);
+}
+.date-headline em { font-style: normal; color: var(--sage); }
+
+/* week strip */
+.week-strip { display: flex; gap: 4px; padding: 12px 0 16px; }
+.wd {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 8px 2px;
+  border-radius: 14px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  transition: background 0.14s;
+  -webkit-user-select: none; user-select: none;
+}
+.wd:hover { background: rgba(74,124,95,0.08); }
+.wd .wl { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted-light); line-height: 1; }
+.wd .wn { font-size: 15px; font-weight: 500; color: var(--stone); line-height: 1; }
+.wd .wdot { width: 4px; height: 4px; border-radius: 50%; background: var(--border); }
+.wd.today { background: var(--sage-light); }
+.wd.today .wl { color: var(--sage); }
+.wd.today .wn { color: var(--sage); }
+.wd.today .wdot { background: var(--sage-mid); }
+.wd.sel { background: var(--sage); }
+.wd.sel .wl { color: rgba(255,255,255,0.65); }
+.wd.sel .wn { color: #fff; }
+.wd.sel .wdot { background: rgba(255,255,255,0.35); }
+
+/* progress */
+.progress-card {
+  background: var(--raised);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  padding: 13px 16px;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 4px;
+}
+.prog-nums { display: flex; flex-direction: column; align-items: center; min-width: 38px; }
+.prog-big { font-family: 'Lora', Georgia, serif; font-size: 24px; font-weight: 400; color: var(--sage); line-height: 1; }
+.prog-of { font-size: 10px; color: var(--muted-light); margin-top: 1px; }
+.prog-track { flex: 1; height: 4px; background: var(--border-light); border-radius: var(--r-pill); overflow: hidden; }
+.prog-fill { height: 100%; background: var(--sage); border-radius: var(--r-pill); transition: width 0.35s ease; }
+.prog-pct { font-size: 12px; color: var(--muted); min-width: 30px; text-align: right; }
+
+/* section heads */
+.sec-head { display: flex; align-items: center; gap: 8px; padding: 18px 0 8px; }
+.sec-icon-wrap {
+  width: 24px; height: 24px;
+  border-radius: var(--r-icon);
+  background: var(--sage-light);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sec-icon-wrap.amber { background: var(--amber-bg); }
+.sec-title { font-size: 11px; font-weight: 500; letter-spacing: 0.11em; text-transform: uppercase; color: var(--muted); }
+.sec-title.amber { color: var(--amber); }
+.sec-ct { font-size: 11px; color: var(--muted-light); margin-left: auto; }
+
+/* chore cards */
+.chore-stack { display: flex; flex-direction: column; gap: 7px; }
+.chore-card {
+  background: var(--raised);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  padding: 13px 14px;
+  display: flex; align-items: flex-start; gap: 11px;
+  cursor: pointer;
+  border: none; width: 100%; text-align: left;
+  transition: box-shadow 0.16s, transform 0.16s;
+  -webkit-user-select: none; user-select: none;
+}
+.chore-card:hover { box-shadow: var(--shadow-card-hover); transform: translateY(-1px); }
+.chore-card:active { transform: translateY(0); }
+.chore-card.done { box-shadow: none; background: var(--surface); opacity: 0.5; }
+.chore-card.snoozed { background: var(--amber-bg); box-shadow: 0 1px 3px rgba(193,127,58,0.1); }
+
+.chk {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+  transition: border-color 0.15s, background 0.15s;
+  background: transparent;
+}
+.chore-card:hover .chk { border-color: var(--sage-mid); }
+.chk.on { background: var(--sage); border-color: var(--sage); }
+
+.chore-body { flex: 1; min-width: 0; }
+.chore-name { font-size: 14px; color: var(--stone); line-height: 1.35; margin-bottom: 5px; }
+.chore-card.done .chore-name { text-decoration: line-through; color: var(--muted); }
+
+.chore-tags { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.chore-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 7px; }
+
+.tag {
+  font-size: 10px; font-weight: 500;
+  padding: 2px 7px; border-radius: var(--r-pill);
+  letter-spacing: 0.02em; white-space: nowrap;
+}
+.tag-daily    { background: var(--sage-light); color: #2E5C42; }
+.tag-weekly   { background: #E6F1FB; color: #185FA5; }
+.tag-monthly  { background: #EEEDFE; color: #534AB7; }
+.tag-seasonal { background: #EAF3DE; color: #3B6D11; }
+.tag-annually { background: var(--amber-bg); color: var(--amber); }
+.tag-room     { background: var(--border-light); color: var(--muted); }
+.tag-snooze   { background: var(--amber-bg); color: var(--amber); }
+
+/* delay button — div, not button, to avoid nested button issue */
+.delay-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--muted-light);
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: color 0.13s, border-color 0.13s, background 0.13s;
+  -webkit-user-select: none; user-select: none;
+  margin-top: 7px;
+}
+.delay-btn:hover { color: var(--amber); border-color: var(--amber-border); background: var(--amber-bg); }
+
+/* snooze tray */
+.snooze-tray {
+  background: #FFF8EF;
+  border: 1px solid var(--amber-border);
+  border-radius: var(--r-sm);
+  padding: 9px 10px;
+  margin-top: 9px;
+}
+.snooze-label { font-size: 11px; font-weight: 500; color: var(--amber); margin-bottom: 7px; }
+.snooze-opts { display: flex; flex-wrap: wrap; gap: 5px; }
+.snooze-opt {
+  font-size: 11px; padding: 4px 11px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--amber-border);
+  background: var(--raised); color: var(--stone);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.snooze-opt:hover { background: rgba(193,127,58,0.12); color: var(--amber); border-color: var(--amber); }
+
+/* done */
+.done-head { display: flex; align-items: center; gap: 7px; padding: 18px 0 8px; }
+.done-icon { width: 20px; height: 20px; border-radius: 50%; background: var(--sage); display: flex; align-items: center; justify-content: center; }
+.done-lbl { font-size: 11px; font-weight: 500; letter-spacing: 0.11em; text-transform: uppercase; color: var(--sage); }
+.done-ct { font-size: 11px; color: var(--muted-light); margin-left: auto; }
+.empty-day { text-align: center; padding: 3rem 1rem 2rem; color: var(--muted); }
+.empty-day p { font-size: 14px; margin-top: 10px; }
+
+/* week view */
+.week-header { padding: 52px 16px 0; background: var(--bg); }
+.week-title-row { padding: 16px 0 14px; }
+.week-title-row h2 { font-family: 'Lora', Georgia, serif; font-size: 26px; font-weight: 400; color: var(--stone); letter-spacing: -0.3px; }
+.week-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.week-day-card { background: var(--raised); border-radius: var(--r-card); box-shadow: var(--shadow-card); margin-bottom: 10px; overflow: hidden; }
+.wdc-head { display: flex; align-items: center; padding: 12px 14px; cursor: pointer; gap: 10px; -webkit-user-select: none; user-select: none; }
+.wdc-today-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--sage); flex-shrink: 0; }
+.wdc-name { font-size: 14px; font-weight: 500; color: var(--stone); }
+.wdc-date { font-size: 12px; color: var(--muted); }
+.wdc-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.wdc-prog { width: 44px; height: 3px; background: var(--border-light); border-radius: var(--r-pill); overflow: hidden; }
+.wdc-prog-fill { height: 100%; background: var(--sage); border-radius: var(--r-pill); }
+.wdc-ct { font-size: 11px; color: var(--muted-light); }
+.wdc-chev { transition: transform 0.2s; display: flex; align-items: center; }
+.wdc-chev.open { transform: rotate(180deg); }
+.wdc-body { border-top: 1px solid var(--border-light); }
+.wdc-row { display: flex; align-items: center; gap: 9px; padding: 9px 14px; border-bottom: 1px solid var(--border-light); cursor: pointer; transition: background 0.12s; -webkit-user-select: none; user-select: none; }
+.wdc-row:last-child { border-bottom: none; }
+.wdc-row:hover { background: var(--surface); }
+.wdc-row.done { opacity: 0.42; }
+.wdc-row.done .wdc-row-name { text-decoration: line-through; color: var(--muted); }
+.mini-chk { width: 17px; height: 17px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.14s; }
+.mini-chk.on { background: var(--sage); border-color: var(--sage); }
+.wdc-row-name { font-size: 13px; color: var(--stone); flex: 1; line-height: 1.3; }
+.wdc-empty { padding: 10px 14px; font-size: 12px; color: var(--muted-light); }
+
+/* manage view */
+.manage-header { padding: 52px 16px 0; background: var(--bg); }
+.manage-title-row { padding: 16px 0 14px; }
+.manage-title-row h2 { font-family: 'Lora', Georgia, serif; font-size: 26px; font-weight: 400; color: var(--stone); letter-spacing: -0.3px; }
+.manage-title-row p { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.mg-group { margin-bottom: 24px; }
+.mg-group-title { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.mg-card { background: var(--raised); border-radius: var(--r-card); box-shadow: var(--shadow-card); padding: 12px 14px; margin-bottom: 7px; }
+.mg-card-top { display: flex; align-items: flex-start; gap: 10px; }
+.mg-info { flex: 1; min-width: 0; }
+.mg-name { font-size: 13px; color: var(--stone); margin-bottom: 4px; line-height: 1.3; }
+.mg-meta { display: flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.mg-sched-link { font-size: 11px; color: var(--muted-light); display: flex; align-items: center; gap: 3px; cursor: pointer; border: none; background: none; padding: 4px 0 0; transition: color 0.13s; }
+.mg-sched-link:hover { color: var(--sage); }
+.tog { width: 38px; height: 21px; border-radius: var(--r-pill); background: var(--border); border: none; cursor: pointer; position: relative; flex-shrink: 0; transition: background 0.18s; }
+.tog.on { background: var(--sage); }
+.tog::after { content: ''; position: absolute; width: 15px; height: 15px; border-radius: 50%; background: #fff; top: 3px; left: 3px; transition: left 0.18s; box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+.tog.on::after { left: 20px; }
+.del-btn { background: none; border: none; cursor: pointer; color: var(--muted-light); padding: 2px; flex-shrink: 0; transition: color 0.13s; display: flex; align-items: center; }
+.del-btn:hover { color: #C0392B; }
+.sched-editor { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-light); }
+.sched-editor label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 7px; }
+.dow-grid { display: flex; gap: 4px; flex-wrap: wrap; }
+.dow-btn { font-size: 11px; padding: 5px 9px; border-radius: var(--r-pill); border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.13s; }
+.dow-btn:hover { border-color: var(--sage-mid); color: var(--sage); }
+.dow-btn.sel { background: var(--sage); border-color: var(--sage); color: #fff; }
+.dom-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.dom-btn { font-size: 10px; padding: 5px 2px; border-radius: 6px; border: 1px solid var(--border-light); background: var(--surface); color: var(--muted); cursor: pointer; text-align: center; transition: all 0.13s; }
+.dom-btn:hover { border-color: var(--sage-mid); color: var(--sage); }
+.dom-btn.sel { background: var(--sage); border-color: var(--sage); color: #fff; }
+.add-section { margin-bottom: 32px; }
+.add-open-btn { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--sage); background: var(--sage-light); border: none; border-radius: var(--r-pill); padding: 8px 16px; cursor: pointer; transition: background 0.13s; }
+.add-open-btn:hover { background: #D5E8DC; }
+.add-form { background: var(--raised); border-radius: var(--r-card); box-shadow: var(--shadow-card); padding: 14px; margin-top: 10px; }
+.add-form input, .add-form select { display: block; width: 100%; margin-bottom: 8px; font-size: 13px; background: var(--surface); color: var(--stone); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 8px 10px; outline: none; appearance: none; -webkit-appearance: none; }
+.add-form input:focus, .add-form select:focus { border-color: var(--sage-mid); }
+.add-form-sched { margin-bottom: 8px; }
+.add-submit { width: 100%; font-size: 13px; font-weight: 500; color: #fff; background: var(--sage); border: none; border-radius: var(--r-pill); padding: 10px; cursor: pointer; transition: background 0.13s; }
+.add-submit:hover { background: var(--sage-dark); }
+
+/* bottom nav */
+.bottom-nav { display: flex; background: var(--raised); box-shadow: var(--shadow-nav); padding-bottom: env(safe-area-inset-bottom, 0px); flex-shrink: 0; }
+.bnav { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 8px 12px; border: none; background: none; cursor: pointer; font-size: 10px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted-light); transition: color 0.14s, background 0.14s; border-top: 2px solid transparent; }
+.bnav.active { color: var(--sage); border-top-color: var(--sage); background: var(--sage-light); }
+.bnav:hover:not(.active) { color: var(--muted); background: var(--border-light); }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TODAY -->
+  <div id="view-today" class="view active">
+    <div class="top-bar">
+      <div class="header">
+        <div class="day-eyebrow" id="day-eyebrow"></div>
+        <div class="date-headline" id="date-headline"></div>
+      </div>
+      <div class="week-strip" id="week-strip"></div>
+      <div class="progress-card" id="progress-card"></div>
+    </div>
+    <div class="scroll-area"><div id="today-main"></div></div>
+  </div>
+
+  <!-- WEEK -->
+  <div id="view-week" class="view">
+    <div class="week-header">
+      <div class="week-title-row">
+        <h2 id="week-title"></h2>
+        <div class="week-sub">Tap a day to expand · tap any chore to check off</div>
+      </div>
+    </div>
+    <div class="scroll-area"><div id="week-main"></div></div>
+  </div>
+
+  <!-- MANAGE -->
+  <div id="view-manage" class="view">
+    <div class="manage-header">
+      <div class="manage-title-row">
+        <h2>Manage chores</h2>
+        <p>Toggle, reschedule, or add tasks</p>
+      </div>
+    </div>
+    <div class="scroll-area"><div id="manage-main"></div></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="bnav active" id="nav-today" onclick="showView('today')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor"/></svg>
+      Today
+    </button>
+    <button class="bnav" id="nav-week" onclick="showView('week')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+      Week
+    </button>
+    <button class="bnav" id="nav-manage" onclick="showView('manage')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Manage
+    </button>
+  </nav>
+</div>
+
+<script>
+// ── SVG ICON STRINGS (no webfont dependency) ──
+const ICO = {
+  check: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  checkSm: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  clock: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+  chevDown: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>`,
+  chevLeft: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  chevRight: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
+  repeat: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`,
+  calWeek: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+  calMonth: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="8" cy="15" r="1" fill="currentColor"/><circle cx="12" cy="15" r="1" fill="currentColor"/><circle cx="16" cy="15" r="1" fill="currentColor"/></svg>`,
+  sun: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+  calYear: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg>`,
+  plus: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  trash: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+  adjust: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="8" cy="6" r="2" fill="white"/><circle cx="16" cy="12" r="2" fill="white"/><circle cx="10" cy="18" r="2" fill="white"/></svg>`,
+  circleCheck: `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>`,
+};
+
+const SEC_ICO = { daily: ICO.repeat, weekly: ICO.calWeek, monthly: ICO.calMonth, seasonal: ICO.sun, annually: ICO.calYear };
+
+// ── STATE ──
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+let selDate = new Date(TODAY), weekOff = 0, openSnooze = null, openSched = {}, showAdd = false, addDOW = 0, addDOM = 1;
+
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAYS_S = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_S = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOW_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const ROOMS = ['Kitchen','Bathrooms','Bedrooms','Living areas','Basement','Laundry','Yard','HVAC','Shed'];
+const FREQ_ORDER = ['daily','weekly','monthly','seasonal','annually'];
+const FREQ_LABEL = {daily:'Daily',weekly:'Weekly',monthly:'Monthly',seasonal:'Seasonal',annually:'Annual'};
+
+function dk(d){ return d.toISOString().slice(0,10); }
+function addDays(d,n){ const r=new Date(d); r.setDate(r.getDate()+n); return r; }
+function parseDK(s){ const[y,m,dd]=s.split('-').map(Number); return new Date(y,m-1,dd); }
+
+let st = {};
+try { st = JSON.parse(localStorage.getItem('homeChores_v2') || '{}'); } catch(e){}
+function save(){ try { localStorage.setItem('homeChores_v2', JSON.stringify(st)); } catch(e){} }
+
+const DEFAULT_CHORES = [
+  {id:'d1',name:'Wipe kitchen counters',room:'Kitchen',freq:'daily',enabled:true},
+  {id:'d2',name:'Wash dishes / run dishwasher',room:'Kitchen',freq:'daily',enabled:true},
+  {id:'d3',name:'Wipe stovetop after cooking',room:'Kitchen',freq:'daily',enabled:true},
+  {id:'d4',name:'Wipe bathroom sinks',room:'Bathrooms',freq:'daily',enabled:true},
+  {id:'d5',name:'Quick toilet wipe-down',room:'Bathrooms',freq:'daily',enabled:true},
+  {id:'d6',name:'Make beds',room:'Bedrooms',freq:'daily',enabled:true},
+  {id:'d7',name:'Pick up clutter in common areas',room:'Living areas',freq:'daily',enabled:true},
+  {id:'d8',name:'Clean dryer lint trap after each load',room:'Laundry',freq:'daily',enabled:true},
+  {id:'d9',name:'Water garden',room:'Yard',freq:'daily',months:[5,6,7,8],enabled:true},
+  {id:'w1',name:'Deep clean stovetop & microwave',room:'Kitchen',freq:'weekly',dow:3,enabled:true},
+  {id:'w2',name:'Wipe cabinet fronts & appliances',room:'Kitchen',freq:'weekly',dow:3,enabled:true},
+  {id:'w3',name:'Mop kitchen floor',room:'Kitchen',freq:'weekly',dow:5,enabled:true},
+  {id:'w4',name:'Scrub toilets',room:'Bathrooms',freq:'weekly',dow:6,enabled:true},
+  {id:'w5',name:'Clean shower & tub walls',room:'Bathrooms',freq:'weekly',dow:6,enabled:true},
+  {id:'w6',name:'Wash bathroom rugs & towels',room:'Bathrooms',freq:'weekly',dow:6,enabled:true},
+  {id:'w7',name:'Change & wash bed linens',room:'Bedrooms',freq:'weekly',dow:6,enabled:true},
+  {id:'w8',name:'Vacuum throughout',room:'Living areas',freq:'weekly',dow:4,enabled:true},
+  {id:'w9',name:'Dust shelves & surfaces',room:'Living areas',freq:'weekly',dow:4,enabled:true},
+  {id:'w10',name:'Take out recycling & trash',room:'Basement',freq:'weekly',dow:1,enabled:true},
+  {id:'m1',name:'Run washer self-clean cycle',room:'Laundry',freq:'monthly',dom:1,enabled:true},
+  {id:'m2',name:'Wipe washer door seal & detergent drawer',room:'Laundry',freq:'monthly',dom:1,enabled:true},
+  {id:'m3',name:'Inspect washer supply hoses for cracks',room:'Laundry',freq:'monthly',dom:1,enabled:true},
+  {id:'m4',name:'Deep-clean dryer lint screen with soap & water',room:'Laundry',freq:'monthly',dom:1,enabled:true},
+  {id:'m5',name:'Clean inside oven',room:'Kitchen',freq:'monthly',dom:1,enabled:true},
+  {id:'m6',name:'Wipe refrigerator shelves & drawers',room:'Kitchen',freq:'monthly',dom:1,enabled:true},
+  {id:'m7',name:'Vacuum refrigerator condenser coils',room:'Kitchen',freq:'monthly',dom:15,enabled:true},
+  {id:'m8',name:'Clean dishwasher filter',room:'Kitchen',freq:'monthly',dom:8,enabled:true},
+  {id:'m9',name:'Descale faucets & showerheads',room:'Bathrooms',freq:'monthly',dom:8,enabled:true},
+  {id:'m10',name:'Check under sinks & near appliances for leaks',room:'Bathrooms',freq:'monthly',dom:8,enabled:true},
+  {id:'m11',name:'Clean bathroom exhaust fans',room:'Bathrooms',freq:'monthly',dom:15,enabled:true},
+  {id:'m12',name:'Rotate mattresses',room:'Bedrooms',freq:'monthly',dom:15,enabled:true},
+  {id:'m13',name:'Vacuum upholstered furniture',room:'Living areas',freq:'monthly',dom:22,enabled:true},
+  {id:'m14',name:'Dust ceiling fans & light fixtures',room:'Living areas',freq:'monthly',dom:22,enabled:true},
+  {id:'m15',name:'Check basement for moisture & leaks',room:'Basement',freq:'monthly',dom:22,enabled:true},
+  {id:'m16',name:'Inspect sump pump',room:'Basement',freq:'monthly',dom:22,enabled:true},
+  {id:'m17',name:'Replace HVAC air filter',room:'HVAC',freq:'monthly',dom:15,enabled:true},
+  {id:'m18',name:'Test smoke & CO detectors',room:'HVAC',freq:'monthly',dom:15,enabled:true},
+  {id:'s1',name:'Clean out & organize shed (open outdoor season)',room:'Shed',freq:'seasonal',months:[3],dom:1,enabled:true},
+  {id:'s2',name:'Mow lawn & edge walkways',room:'Yard',freq:'seasonal',months:[4,5,6,7,8,9],dow:6,enabled:true},
+  {id:'s3',name:'Clean out dryer vent duct',room:'Laundry',freq:'seasonal',months:[2,8],dom:1,enabled:true},
+  {id:'s4',name:'Clean gutters — summer debris',room:'Yard',freq:'seasonal',months:[8],dom:1,enabled:true},
+  {id:'s5',name:'Service furnace before heating season',room:'HVAC',freq:'seasonal',months:[9],dom:1,enabled:true},
+  {id:'s6',name:'Blow out irrigation & winterize outdoor faucets',room:'Yard',freq:'seasonal',months:[9],dom:15,enabled:true},
+  {id:'s7',name:'Rake & mulch leaves',room:'Yard',freq:'seasonal',months:[9,10],dow:6,enabled:true},
+  {id:'s8',name:'Clean out & organize shed (close outdoor season)',room:'Shed',freq:'seasonal',months:[10],dom:1,enabled:true},
+  {id:'s9',name:'Check for ice dams after heavy snowfall',room:'Yard',freq:'seasonal',months:[11,0,1],dow:0,enabled:true},
+  {id:'a1',name:'Professional dryer vent cleaning',room:'Laundry',freq:'annually',month:8,dom:1,enabled:true},
+  {id:'a2',name:'Replace washer supply hoses (every 3–5 yrs)',room:'Laundry',freq:'annually',month:5,dom:15,enabled:true},
+  {id:'a3',name:'Professional HVAC inspection',room:'HVAC',freq:'annually',month:9,dom:1,enabled:true},
+  {id:'a4',name:'Check water heater anode rod',room:'HVAC',freq:'annually',month:5,dom:1,enabled:true},
+  {id:'a5',name:'Professionally clean carpets',room:'Living areas',freq:'annually',month:4,dom:1,enabled:true},
+  {id:'a6',name:'Re-caulk bathtub & shower surrounds',room:'Bathrooms',freq:'annually',month:4,dom:15,enabled:true},
+  {id:'a7',name:'Clean behind & under major appliances',room:'Kitchen',freq:'annually',month:1,dom:1,enabled:true},
+  {id:'a8',name:'Lubricate & inspect shed door & hinges',room:'Shed',freq:'annually',month:3,dom:1,enabled:true},
+  {id:'a9',name:'Seal driveway cracks',room:'Yard',freq:'annually',month:4,dom:15,enabled:true},
+  {id:'a10',name:'Touch up exterior paint & caulking',room:'Yard',freq:'annually',month:5,dom:1,enabled:true},
+];
+
+if (!st.chores) {
+  st.chores = JSON.parse(JSON.stringify(DEFAULT_CHORES));
+} else {
+  DEFAULT_CHORES.forEach(dc => { if (!st.chores.find(c => c.id === dc.id)) st.chores.push(JSON.parse(JSON.stringify(dc))); });
+}
+save();
+
+function getChores(){ return st.chores; }
+
+function isDue(c, d){
+  if (!c.enabled) return false;
+  const dow = d.getDay(), dom = d.getDate(), month = d.getMonth();
+  if (c.freq === 'daily'){ if (c.months && !c.months.includes(month)) return false; return true; }
+  if (c.freq === 'weekly') return c.dow === dow;
+  if (c.freq === 'monthly') return c.dom === dom;
+  if (c.freq === 'seasonal'){
+    if (c.months && !c.months.includes(month)) return false;
+    if (c.dow !== undefined) return c.dow === dow;
+    if (c.dom !== undefined) return c.dom === dom;
+    return false;
+  }
+  if (c.freq === 'annually') return c.month === month && c.dom === dom;
+  return false;
+}
+
+function getForDate(d){ return getChores().filter(c => isDue(c, d)); }
+function ck(id, s){ return id + '|' + s; }
+function getSt(id, s){ return st[ck(id, s)] || null; }
+function setSt(id, s, v){ const k=ck(id,s); if(v===null) delete st[k]; else st[k]=v; save(); }
+
+// ── VIEW SWITCHING ──
+function showView(name){
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.bnav').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  openSnooze = null;
+  if (name==='today')  renderToday();
+  if (name==='week')   renderWeek();
+  if (name==='manage') renderManage();
+}
+
+// ── TODAY ──
+function renderToday(){
+  const dkStr = dk(selDate);
+  const isToday = dkStr === dk(TODAY);
+  document.getElementById('day-eyebrow').textContent = isToday ? 'Today · ' + DAYS[selDate.getDay()] : DAYS[selDate.getDay()];
+  document.getElementById('date-headline').innerHTML = MONTHS[selDate.getMonth()] + ' <em>' + selDate.getDate() + '</em>';
+
+  const sun = addDays(TODAY, -TODAY.getDay() + weekOff * 7);
+  let ws = `<button class="wd" onclick="weekOff--;renderToday()" style="max-width:30px;flex:0 0 30px" aria-label="Previous week"><span style="color:var(--muted-light);display:flex">${ICO.chevLeft}</span></button>`;
+  for (let i = 0; i < 7; i++){
+    const d = addDays(sun, i);
+    const dkd = dk(d);
+    const isT = dkd===dk(TODAY), isSel = dkd===dkStr;
+    ws += `<button class="wd${isT?' today':''}${isSel?' sel':''}" onclick="selDay('${dkd}')" aria-label="${DAYS[d.getDay()]} ${d.getDate()}">
+      <span class="wl">${DAYS_S[d.getDay()]}</span>
+      <span class="wn">${d.getDate()}</span>
+      <span class="wdot"></span>
+    </button>`;
+  }
+  ws += `<button class="wd" onclick="weekOff++;renderToday()" style="max-width:30px;flex:0 0 30px" aria-label="Next week"><span style="color:var(--muted-light);display:flex">${ICO.chevRight}</span></button>`;
+  document.getElementById('week-strip').innerHTML = ws;
+
+  const chores  = getForDate(selDate);
+  const done    = chores.filter(c => getSt(c.id, dkStr) === 'done');
+  const snoozed = chores.filter(c => (getSt(c.id, dkStr)||'').startsWith('snoozed:'));
+  const todo    = chores.filter(c => !getSt(c.id, dkStr));
+  const total = chores.length, doneN = done.length;
+  const pct = total > 0 ? Math.round(doneN / total * 100) : 0;
+
+  document.getElementById('progress-card').innerHTML = `
+    <div class="prog-nums"><div class="prog-big">${doneN}</div><div class="prog-of">of ${total}</div></div>
+    <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+    <div class="prog-pct">${pct}%</div>`;
+
+  let html = '';
+  if (total === 0){
+    html = `<div class="empty-day"><span style="color:var(--sage-mid);display:flex;justify-content:center">${ICO.circleCheck}</span><p>Nothing due today.</p></div>`;
+  } else {
+    const grouped = {};
+    todo.forEach(c => { if (!grouped[c.freq]) grouped[c.freq]=[]; grouped[c.freq].push(c); });
+
+    FREQ_ORDER.forEach(freq => {
+      const grp = grouped[freq];
+      if (!grp || !grp.length) return;
+      html += `<div class="sec-head">
+        <div class="sec-icon-wrap${freq==='seasonal'?'':''}">${SEC_ICO[freq]}</div>
+        <span class="sec-title">${FREQ_LABEL[freq]}</span>
+        <span class="sec-ct">${grp.length}</span>
+      </div><div class="chore-stack">`;
+
+      grp.forEach(c => {
+        const isOpen = openSnooze === c.id;
+        // Delay button only for non-daily chores
+        const showDelay = c.freq !== 'daily';
+        html += `<button class="chore-card" onclick="tapChore('${c.id}')" aria-label="${c.name}">
+          <div class="chk" aria-hidden="true"></div>
+          <div class="chore-body">
+            <div class="chore-name">${c.name}</div>
+            <div class="chore-tags">
+              <span class="tag tag-${c.freq}">${FREQ_LABEL[c.freq]}</span>
+              <span class="tag tag-room">${c.room}</span>
+            </div>
+            ${showDelay ? `<div class="delay-btn" onclick="event.stopPropagation();toggleSnoozeMenu('${c.id}')" role="button" tabindex="0" aria-label="Delay">
+              <span style="display:flex;align-items:center;margin-right:3px">${ICO.clock}</span>Delay
+            </div>` : ''}
+            ${isOpen ? `<div class="snooze-tray" onclick="event.stopPropagation()">
+              <div class="snooze-label">Delay to…</div>
+              <div class="snooze-opts">
+                <button class="snooze-opt" onclick="doSnooze('${c.id}',1)">Tomorrow</button>
+                <button class="snooze-opt" onclick="doSnooze('${c.id}',2)">In 2 days</button>
+                <button class="snooze-opt" onclick="doSnooze('${c.id}',3)">In 3 days</button>
+                <button class="snooze-opt" onclick="doSnooze('${c.id}',7)">Next week</button>
+              </div>
+            </div>` : ''}
+          </div>
+        </button>`;
+      });
+      html += `</div>`;
+    });
+
+    if (snoozed.length > 0){
+      html += `<div class="sec-head">
+        <div class="sec-icon-wrap amber">${ICO.clock}</div>
+        <span class="sec-title amber">Delayed</span>
+      </div><div class="chore-stack">`;
+      snoozed.forEach(c => {
+        const sv = getSt(c.id, dkStr)||'';
+        const td = parseDK(sv.replace('snoozed:',''));
+        const lbl = dk(td)===dk(addDays(selDate,1)) ? 'Tomorrow' : `${MONTHS_S[td.getMonth()]} ${td.getDate()}`;
+        html += `<button class="chore-card snoozed" onclick="unsnooze('${c.id}')" aria-label="Move back to today">
+          <div class="chore-body">
+            <div class="chore-name">${c.name}</div>
+            <div class="chore-tags">
+              <span class="tag tag-snooze">${ICO.clock} → ${lbl}</span>
+              <span class="tag tag-room">${c.room}</span>
+            </div>
+          </div>
+        </button>`;
+      });
+      html += `</div>`;
+    }
+
+    if (done.length > 0){
+      html += `<div class="done-head">
+        <div class="done-icon">${ICO.checkSm}</div>
+        <span class="done-lbl">Done</span>
+        <span class="done-ct">${done.length}</span>
+      </div><div class="chore-stack">`;
+      done.forEach(c => {
+        html += `<button class="chore-card done" onclick="tapDone('${c.id}')" aria-label="Unmark ${c.name}">
+          <div class="chk on" aria-hidden="true">${ICO.check}</div>
+          <div class="chore-body">
+            <div class="chore-name">${c.name}</div>
+            <div class="chore-tags">
+              <span class="tag tag-${c.freq}">${FREQ_LABEL[c.freq]}</span>
+              <span class="tag tag-room">${c.room}</span>
+            </div>
+          </div>
+        </button>`;
+      });
+      html += `</div>`;
+    }
+  }
+  document.getElementById('today-main').innerHTML = html;
+}
+
+function tapChore(id){
+  const dkStr=dk(selDate);
+  if (openSnooze===id){ openSnooze=null; renderToday(); return; }
+  openSnooze=null;
+  setSt(id,dkStr,getSt(id,dkStr)==='done'?null:'done');
+  renderToday();
+}
+function tapDone(id){ setSt(id,dk(selDate),null); renderToday(); }
+function toggleSnoozeMenu(id){ openSnooze=openSnooze===id?null:id; renderToday(); }
+function doSnooze(id,days){ setSt(id,dk(selDate),'snoozed:'+dk(addDays(selDate,days))); openSnooze=null; renderToday(); }
+function unsnooze(id){ setSt(id,dk(selDate),null); renderToday(); }
+function selDay(dkStr){ selDate=parseDK(dkStr); openSnooze=null; renderToday(); }
+
+// ── WEEK ──
+function renderWeek(){
+  const sun = addDays(TODAY,-TODAY.getDay());
+  const end = addDays(sun,6);
+  document.getElementById('week-title').textContent = `${MONTHS_S[sun.getMonth()]} ${sun.getDate()} – ${MONTHS_S[end.getMonth()]} ${end.getDate()}, ${end.getFullYear()}`;
+  let html = '';
+  for (let i=0; i<7; i++){
+    const d=addDays(sun,i), dkStr=dk(d);
+    const chores=getForDate(d);
+    const doneN=chores.filter(c=>getSt(c.id,dkStr)==='done').length;
+    const isT=dkStr===dk(TODAY);
+    const pct=chores.length>0?Math.round(doneN/chores.length*100):0;
+    html += `<div class="week-day-card">
+      <div class="wdc-head" onclick="toggleWDC(${i})">
+        ${isT?'<div class="wdc-today-pip"></div>':''}
+        <span class="wdc-name">${DAYS[d.getDay()]}</span>
+        <span class="wdc-date">${MONTHS_S[d.getMonth()]} ${d.getDate()}</span>
+        <div class="wdc-right">
+          <div class="wdc-prog"><div class="wdc-prog-fill" style="width:${pct}%"></div></div>
+          <span class="wdc-ct">${doneN}/${chores.length}</span>
+          <span class="wdc-chev${isT?' open':''}" id="wdc-chev-${i}" style="color:var(--muted-light)">${ICO.chevDown}</span>
+        </div>
+      </div>
+      <div class="wdc-body" id="wdc-body-${i}" style="${isT?'':'display:none'}">`;
+    if (chores.length===0){
+      html += `<div class="wdc-empty">Nothing due</div>`;
+    } else {
+      chores.forEach(c=>{
+        const done=getSt(c.id,dkStr)==='done';
+        html+=`<div class="wdc-row${done?' done':''}" onclick="weekToggle('${c.id}','${dkStr}')">
+          <div class="mini-chk${done?' on':''}" aria-hidden="true">${done?ICO.checkSm:''}</div>
+          <span class="wdc-row-name">${c.name}</span>
+          <span class="tag tag-${c.freq}" style="font-size:9px">${FREQ_LABEL[c.freq]}</span>
+        </div>`;
+      });
+    }
+    html+=`</div></div>`;
+  }
+  document.getElementById('week-main').innerHTML=html;
+}
+
+function toggleWDC(i){
+  const body=document.getElementById('wdc-body-'+i);
+  const chev=document.getElementById('wdc-chev-'+i);
+  if (!body) return;
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  if (chev) chev.classList.toggle('open',!open);
+}
+function weekToggle(id,dkStr){ setSt(id,dkStr,getSt(id,dkStr)==='done'?null:'done'); renderWeek(); }
+
+// ── MANAGE ──
+function renderManage(){
+  const chores=getChores();
+  let html='';
+  FREQ_ORDER.forEach(freq=>{
+    const grp=chores.filter(c=>c.freq===freq);
+    if (!grp.length) return;
+    html+=`<div class="mg-group"><div class="mg-group-title">${SEC_ICO[freq]} ${FREQ_LABEL[freq]} chores</div>`;
+    grp.forEach(c=>{
+      const isOpen=!!openSched[c.id];
+      html+=`<div class="mg-card">
+        <div class="mg-card-top">
+          <div class="mg-info">
+            <div class="mg-name">${c.name}</div>
+            <div class="mg-meta">
+              <span class="tag tag-${c.freq}">${FREQ_LABEL[c.freq]}</span>
+              <span class="tag tag-room">${c.room}</span>
+              ${c.freq==='weekly'?`<span class="tag tag-room">${DOW_NAMES[c.dow||0]}s</span>`:''}
+              ${c.freq==='monthly'?`<span class="tag tag-room">Day ${c.dom||1}</span>`:''}
+              ${c.months&&c.freq==='daily'?`<span class="tag tag-seasonal">Jun–Sep</span>`:''}
+            </div>
+            ${(c.freq==='weekly'||c.freq==='monthly')?`<button class="mg-sched-link" onclick="toggleSched('${c.id}')">
+              ${ICO.adjust} ${isOpen?'Hide schedule':'Edit schedule'}
+            </button>`:''}
+          </div>
+          <button class="tog${c.enabled?' on':''}" onclick="toggleEnabled('${c.id}')" aria-label="${c.enabled?'Disable':'Enable'} ${c.name}"></button>
+          <button class="del-btn" onclick="deleteChore('${c.id}')" aria-label="Delete ${c.name}">${ICO.trash}</button>
+        </div>`;
+      if (isOpen&&c.freq==='weekly'){
+        html+=`<div class="sched-editor"><label>Scheduled day of week:</label><div class="dow-grid">`;
+        DOW_NAMES.forEach((dn,i)=>{ html+=`<button class="dow-btn${c.dow===i?' sel':''}" onclick="setDOW('${c.id}',${i})">${dn}</button>`; });
+        html+=`</div></div>`;
+      }
+      if (isOpen&&c.freq==='monthly'){
+        html+=`<div class="sched-editor"><label>Day of month (1–28):</label><div class="dom-grid">`;
+        for(let d=1;d<=28;d++) html+=`<button class="dom-btn${c.dom===d?' sel':''}" onclick="setDOM('${c.id}',${d})">${d}</button>`;
+        html+=`</div></div>`;
+      }
+      html+=`</div>`;
+    });
+    html+=`</div>`;
+  });
+
+  html+=`<div class="add-section"><div class="mg-group-title">${ICO.plus} Add a chore</div>`;
+  if (showAdd){
+    html+=`<div class="add-form">
+      <input id="add-name" type="text" placeholder="Chore name" />
+      <select id="add-room">${ROOMS.map(r=>`<option value="${r}">${r}</option>`).join('')}</select>
+      <select id="add-freq" onchange="renderManage()">
+        <option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option>
+      </select>
+      <div class="add-form-sched" id="add-form-sched"></div>
+      <button class="add-submit" onclick="submitAdd()">Add chore</button>
+    </div>`;
+  } else {
+    html+=`<button class="add-open-btn" onclick="showAdd=true;renderManage()">${ICO.plus} New chore</button>`;
+  }
+  html+=`</div>`;
+  document.getElementById('manage-main').innerHTML=html;
+
+  if (showAdd){
+    const fv=(document.getElementById('add-freq')||{}).value||'daily';
+    const sf=document.getElementById('add-form-sched');
+    if (sf){
+      if (fv==='weekly') sf.innerHTML=`<div class="sched-editor" style="border:none;margin:0;padding:0"><label>Day of week:</label><div class="dow-grid">`+DOW_NAMES.map((dn,i)=>`<button type="button" class="dow-btn${i===addDOW?' sel':''}" onclick="pickDOW(${i})">${dn}</button>`).join('')+`</div></div>`;
+      else if (fv==='monthly') sf.innerHTML=`<div class="sched-editor" style="border:none;margin:0;padding:0"><label>Day of month:</label><div class="dom-grid">`+Array.from({length:28},(_,i)=>i+1).map(d=>`<button type="button" class="dom-btn${d===addDOM?' sel':''}" onclick="pickDOM(${d})">${d}</button>`).join('')+`</div></div>`;
+      else sf.innerHTML='';
+    }
+  }
+}
+
+function toggleSched(id){ openSched[id]=!openSched[id]; renderManage(); }
+function toggleEnabled(id){ const c=getChores().find(x=>x.id===id); if(c){c.enabled=!c.enabled;save();renderManage();} }
+function deleteChore(id){ st.chores=st.chores.filter(c=>c.id!==id); save(); renderManage(); }
+function setDOW(id,dow){ const c=getChores().find(x=>x.id===id); if(c){c.dow=dow;save();renderManage();} }
+function setDOM(id,dom){ const c=getChores().find(x=>x.id===id); if(c){c.dom=dom;save();renderManage();} }
+function pickDOW(i){ addDOW=i; renderManage(); }
+function pickDOM(d){ addDOM=d; renderManage(); }
+function submitAdd(){
+  const name=(document.getElementById('add-name')||{}).value||'';
+  if (!name.trim()) return;
+  const room=(document.getElementById('add-room')||{}).value||'Kitchen';
+  const freq=(document.getElementById('add-freq')||{}).value||'daily';
+  const c={id:'u'+Date.now(),name:name.trim(),room,freq,enabled:true};
+  if (freq==='weekly') c.dow=addDOW;
+  if (freq==='monthly') c.dom=addDOM;
+  st.chores.push(c); showAdd=false; addDOW=0; addDOM=1; save(); renderManage();
+}
+
+renderToday();
+</script>
+</body>
+</html>
