@@ -479,10 +479,24 @@ const DEFAULT_CHORES = [
 if (!st.chores) {
   st.chores = JSON.parse(JSON.stringify(DEFAULT_CHORES));
 } else {
+  // Add any missing chores
   DEFAULT_CHORES.forEach(dc => { if (!st.chores.find(c => c.id === dc.id)) st.chores.push(JSON.parse(JSON.stringify(dc))); });
-  // Migrate: update trash day to Thursday if it was Monday
-  const trash = st.chores.find(c => c.id === 'w10');
-  if (trash && trash.dow === 1) trash.dow = 4;
+  // Migration: force-update all monthly chores to new week+dow schedule
+  // and weekly chores to correct days
+  const migrations = {
+    w10: {dow:4},
+    m1:  {week:1,dow:0}, m2: {week:1,dow:0}, m3: {week:1,dow:0}, m4: {week:1,dow:0},
+    m5:  {week:2,dow:0}, m6: {week:2,dow:0},
+    m7:  {week:3,dow:0}, m9: {week:3,dow:0}, m10:{week:3,dow:0},
+    m11: {week:3,dow:0}, m12:{week:3,dow:0}, m17:{week:3,dow:0}, m18:{week:3,dow:0},
+    m8:  {week:4,dow:0}, m13:{week:4,dow:0}, m14:{week:4,dow:0},
+    m15: {week:4,dow:0}, m16:{week:4,dow:0},
+  };
+  st.chores.forEach(c => {
+    if (migrations[c.id]) Object.assign(c, migrations[c.id]);
+  });
+  // Remove old d8 (lint trap) if still present
+  st.chores = st.chores.filter(c => c.id !== 'd8');
 }
 save();
 
