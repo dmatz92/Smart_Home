@@ -395,7 +395,7 @@ const SEC_ICO = { daily: ICO.repeat, weekly: ICO.calWeek, monthly: ICO.calMonth,
 
 // ── STATE ──
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
-let selDate = new Date(TODAY), weekOff = 0, openSnooze = null, openSched = {}, showAdd = false, addDOW = 0, addDOM = 1;
+let selDate = new Date(TODAY), weekOff = 0, openSnooze = null, openSched = {}, showAdd = false, addDOW = 0, addDOM = 1, addWeek = 1;
 
 const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const DAYS_S = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -422,7 +422,6 @@ const DEFAULT_CHORES = [
   {id:'d5',name:'Quick toilet wipe-down',room:'Bathrooms',freq:'daily',enabled:true},
   {id:'d6',name:'Make beds',room:'Bedrooms',freq:'daily',enabled:true},
   {id:'d7',name:'Pick up clutter in common areas',room:'Living areas',freq:'daily',enabled:true},
-  {id:'d8',name:'Clean dryer lint trap after each load',room:'Laundry',freq:'daily',enabled:true},
   {id:'d9',name:'Water garden',room:'Yard',freq:'daily',months:[5,6,7,8],enabled:true},
   {id:'w1',name:'Deep clean stovetop & microwave',room:'Kitchen',freq:'weekly',dow:3,enabled:true},
   {id:'w2',name:'Wipe cabinet fronts & appliances',room:'Kitchen',freq:'weekly',dow:3,enabled:true},
@@ -433,25 +432,29 @@ const DEFAULT_CHORES = [
   {id:'w7',name:'Change & wash bed linens',room:'Bedrooms',freq:'weekly',dow:6,enabled:true},
   {id:'w8',name:'Vacuum throughout',room:'Living areas',freq:'weekly',dow:4,enabled:true},
   {id:'w9',name:'Dust shelves & surfaces',room:'Living areas',freq:'weekly',dow:4,enabled:true},
-  {id:'w10',name:'Take out recycling & trash',room:'Basement',freq:'weekly',dow:1,enabled:true},
-  {id:'m1',name:'Run washer self-clean cycle',room:'Laundry',freq:'monthly',dom:1,enabled:true},
-  {id:'m2',name:'Wipe washer door seal & detergent drawer',room:'Laundry',freq:'monthly',dom:1,enabled:true},
-  {id:'m3',name:'Inspect washer supply hoses for cracks',room:'Laundry',freq:'monthly',dom:1,enabled:true},
-  {id:'m4',name:'Deep-clean dryer lint screen with soap & water',room:'Laundry',freq:'monthly',dom:1,enabled:true},
-  {id:'m5',name:'Clean inside oven',room:'Kitchen',freq:'monthly',dom:1,enabled:true},
-  {id:'m6',name:'Wipe refrigerator shelves & drawers',room:'Kitchen',freq:'monthly',dom:1,enabled:true},
-  {id:'m7',name:'Vacuum refrigerator condenser coils',room:'Kitchen',freq:'monthly',dom:15,enabled:true},
-  {id:'m8',name:'Clean dishwasher filter',room:'Kitchen',freq:'monthly',dom:8,enabled:true},
-  {id:'m9',name:'Descale faucets & showerheads',room:'Bathrooms',freq:'monthly',dom:8,enabled:true},
-  {id:'m10',name:'Check under sinks & near appliances for leaks',room:'Bathrooms',freq:'monthly',dom:8,enabled:true},
-  {id:'m11',name:'Clean bathroom exhaust fans',room:'Bathrooms',freq:'monthly',dom:15,enabled:true},
-  {id:'m12',name:'Rotate mattresses',room:'Bedrooms',freq:'monthly',dom:15,enabled:true},
-  {id:'m13',name:'Vacuum upholstered furniture',room:'Living areas',freq:'monthly',dom:22,enabled:true},
-  {id:'m14',name:'Dust ceiling fans & light fixtures',room:'Living areas',freq:'monthly',dom:22,enabled:true},
-  {id:'m15',name:'Check basement for moisture & leaks',room:'Basement',freq:'monthly',dom:22,enabled:true},
-  {id:'m16',name:'Inspect sump pump',room:'Basement',freq:'monthly',dom:22,enabled:true},
-  {id:'m17',name:'Replace HVAC air filter',room:'HVAC',freq:'monthly',dom:15,enabled:true},
-  {id:'m18',name:'Test smoke & CO detectors',room:'HVAC',freq:'monthly',dom:15,enabled:true},
+  {id:'w10',name:'Take out recycling & trash',room:'Basement',freq:'weekly',dow:4,enabled:true},
+  // 1st Sunday
+  {id:'m1',name:'Run washer self-clean cycle',room:'Laundry',freq:'monthly',week:1,dow:0,enabled:true},
+  {id:'m2',name:'Wipe washer door seal & detergent drawer',room:'Laundry',freq:'monthly',week:1,dow:0,enabled:true},
+  {id:'m3',name:'Inspect washer supply hoses for cracks',room:'Laundry',freq:'monthly',week:1,dow:0,enabled:true},
+  {id:'m4',name:'Deep-clean dryer lint screen with soap & water',room:'Laundry',freq:'monthly',week:1,dow:0,enabled:true},
+  // 2nd Sunday
+  {id:'m5',name:'Clean inside oven',room:'Kitchen',freq:'monthly',week:2,dow:0,enabled:true},
+  {id:'m6',name:'Wipe refrigerator shelves & drawers',room:'Kitchen',freq:'monthly',week:2,dow:0,enabled:true},
+  // 3rd Sunday
+  {id:'m7',name:'Vacuum refrigerator condenser coils',room:'Kitchen',freq:'monthly',week:3,dow:0,enabled:true},
+  {id:'m9',name:'Descale faucets & showerheads',room:'Bathrooms',freq:'monthly',week:3,dow:0,enabled:true},
+  {id:'m10',name:'Check under sinks & near appliances for leaks',room:'Bathrooms',freq:'monthly',week:3,dow:0,enabled:true},
+  {id:'m11',name:'Clean bathroom exhaust fans',room:'Bathrooms',freq:'monthly',week:3,dow:0,enabled:true},
+  {id:'m12',name:'Rotate mattresses',room:'Bedrooms',freq:'monthly',week:3,dow:0,enabled:true},
+  {id:'m17',name:'Replace HVAC air filter',room:'HVAC',freq:'monthly',week:3,dow:0,enabled:true},
+  {id:'m18',name:'Test smoke & CO detectors',room:'HVAC',freq:'monthly',week:3,dow:0,enabled:true},
+  // 4th Sunday (falls back to 3rd if month has no 4th Sunday)
+  {id:'m8',name:'Clean dishwasher filter',room:'Kitchen',freq:'monthly',week:4,dow:0,enabled:true},
+  {id:'m13',name:'Vacuum upholstered furniture',room:'Living areas',freq:'monthly',week:4,dow:0,enabled:true},
+  {id:'m14',name:'Dust ceiling fans & light fixtures',room:'Living areas',freq:'monthly',week:4,dow:0,enabled:true},
+  {id:'m15',name:'Check basement for moisture & leaks',room:'Basement',freq:'monthly',week:4,dow:0,enabled:true},
+  {id:'m16',name:'Inspect sump pump',room:'Basement',freq:'monthly',week:4,dow:0,enabled:true},
   {id:'s1',name:'Clean out & organize shed (open outdoor season)',room:'Shed',freq:'seasonal',months:[3],dom:1,enabled:true},
   {id:'s2',name:'Mow lawn & edge walkways',room:'Yard',freq:'seasonal',months:[4,5,6,7,8,9],dow:6,enabled:true},
   {id:'s3',name:'Clean out dryer vent duct',room:'Laundry',freq:'seasonal',months:[2,8],dom:1,enabled:true},
@@ -477,17 +480,39 @@ if (!st.chores) {
   st.chores = JSON.parse(JSON.stringify(DEFAULT_CHORES));
 } else {
   DEFAULT_CHORES.forEach(dc => { if (!st.chores.find(c => c.id === dc.id)) st.chores.push(JSON.parse(JSON.stringify(dc))); });
+  // Migrate: update trash day to Thursday if it was Monday
+  const trash = st.chores.find(c => c.id === 'w10');
+  if (trash && trash.dow === 1) trash.dow = 4;
 }
 save();
 
 function getChores(){ return st.chores; }
 
+// Returns the Nth occurrence of a weekday in a month (1-indexed).
+// If N=4 and there's no 4th occurrence, returns the 3rd.
+function nthWeekdayOfMonth(year, month, dow, n){
+  const first = new Date(year, month, 1);
+  const firstDow = first.getDay();
+  let day = 1 + ((dow - firstDow + 7) % 7) + (n - 1) * 7;
+  // Check if this day falls within the month; if not, back up one week
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  if (day > daysInMonth) day -= 7;
+  return day;
+}
+
 function isDue(c, d){
   if (!c.enabled) return false;
-  const dow = d.getDay(), dom = d.getDate(), month = d.getMonth();
+  const dow = d.getDay(), dom = d.getDate(), month = d.getMonth(), year = d.getFullYear();
   if (c.freq === 'daily'){ if (c.months && !c.months.includes(month)) return false; return true; }
   if (c.freq === 'weekly') return c.dow === dow;
-  if (c.freq === 'monthly') return c.dom === dom;
+  if (c.freq === 'monthly'){
+    // New week+dow style (e.g. 1st Sunday)
+    if (c.week !== undefined && c.dow !== undefined){
+      return dom === nthWeekdayOfMonth(year, month, c.dow, c.week);
+    }
+    // Legacy dom style
+    return c.dom === dom;
+  }
   if (c.freq === 'seasonal'){
     if (c.months && !c.months.includes(month)) return false;
     if (c.dow !== undefined) return c.dow === dow;
@@ -498,7 +523,21 @@ function isDue(c, d){
   return false;
 }
 
-function getForDate(d){ return getChores().filter(c => isDue(c, d)); }
+function getForDate(d){
+  const dkStr = dk(d);
+  const native = getChores().filter(c => isDue(c, d));
+  const snoozedToday = [];
+  Object.keys(st).forEach(key => {
+    if (typeof st[key] === "string" && st[key] === "snoozed:" + dkStr) {
+      const choreId = key.split("|")[0];
+      if (!native.find(c => c.id === choreId)) {
+        const chore = getChores().find(c => c.id === choreId);
+        if (chore && chore.enabled) snoozedToday.push(Object.assign({}, chore, {_snoozedFrom: key.split("|")[1]}));
+      }
+    }
+  });
+  return [...native, ...snoozedToday];
+}
 function ck(id, s){ return id + '|' + s; }
 function getSt(id, s){ return st[ck(id, s)] || null; }
 function setSt(id, s, v){ const k=ck(id,s); if(v===null) delete st[k]; else st[k]=v; save(); }
@@ -538,9 +577,11 @@ function renderToday(){
   document.getElementById('week-strip').innerHTML = ws;
 
   const chores  = getForDate(selDate);
-  const done    = chores.filter(c => getSt(c.id, dkStr) === 'done');
-  const snoozed = chores.filter(c => (getSt(c.id, dkStr)||'').startsWith('snoozed:'));
-  const todo    = chores.filter(c => !getSt(c.id, dkStr));
+  // For chores snoozed in from another day, their status key lives on the origin date
+  function choreStKey(c){ return c._snoozedFrom || dkStr; }
+  const done    = chores.filter(c => getSt(c.id, choreStKey(c)) === 'done');
+  const snoozed = chores.filter(c => (getSt(c.id, choreStKey(c))||'').startsWith('snoozed:'));
+  const todo    = chores.filter(c => !getSt(c.id, choreStKey(c)));
   const total = chores.length, doneN = done.length;
   const pct = total > 0 ? Math.round(doneN / total * 100) : 0;
 
@@ -645,13 +686,34 @@ function tapChore(id){
   const dkStr=dk(selDate);
   if (openSnooze===id){ openSnooze=null; renderToday(); return; }
   openSnooze=null;
-  setSt(id,dkStr,getSt(id,dkStr)==='done'?null:'done');
+  const chore = getChores().find(c=>c.id===id);
+  const stKey = (chore&&chore._snoozedFrom) ? chore._snoozedFrom : dkStr;
+  setSt(id,stKey,getSt(id,stKey)==='done'?null:'done');
   renderToday();
 }
-function tapDone(id){ setSt(id,dk(selDate),null); renderToday(); }
+function tapDone(id){
+  const dkStr=dk(selDate);
+  const chore=getChores().find(c=>c.id===id);
+  const stKey=(chore&&chore._snoozedFrom)?chore._snoozedFrom:dkStr;
+  setSt(id,stKey,null); renderToday();
+}
 function toggleSnoozeMenu(id){ openSnooze=openSnooze===id?null:id; renderToday(); }
-function doSnooze(id,days){ setSt(id,dk(selDate),'snoozed:'+dk(addDays(selDate,days))); openSnooze=null; renderToday(); }
-function unsnooze(id){ setSt(id,dk(selDate),null); renderToday(); }
+function doSnooze(id,days){
+  const dkStr=dk(selDate);
+  // Snooze record goes on the origin key (in case this chore was itself snoozed in)
+  let originKey=dkStr;
+  Object.keys(st).forEach(k=>{ if(k.startsWith(id+'|') && st[k]==='snoozed:'+dkStr) originKey=k.split('|')[1]; });
+  // If no existing snooze record pointing here, use today
+  setSt(id,originKey,'snoozed:'+dk(addDays(selDate,days)));
+  openSnooze=null; renderToday();
+}
+function unsnooze(id){
+  // Find the origin key by scanning state
+  const dkStr=dk(selDate);
+  let originKey=dkStr;
+  Object.keys(st).forEach(k=>{ if(k.startsWith(id+'|') && st[k]==='snoozed:'+dkStr) originKey=k.split('|')[1]; });
+  setSt(id,originKey,null); renderToday();
+}
 function selDay(dkStr){ selDate=parseDK(dkStr); openSnooze=null; renderToday(); }
 
 // ── WEEK ──
@@ -723,7 +785,7 @@ function renderManage(){
               <span class="tag tag-${c.freq}">${FREQ_LABEL[c.freq]}</span>
               <span class="tag tag-room">${c.room}</span>
               ${c.freq==='weekly'?`<span class="tag tag-room">${DOW_NAMES[c.dow||0]}s</span>`:''}
-              ${c.freq==='monthly'?`<span class="tag tag-room">Day ${c.dom||1}</span>`:''}
+              ${c.freq==='monthly'?(c.week!==undefined?`<span class="tag tag-room">${['1st','2nd','3rd','4th'][c.week-1]||'1st'} ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][c.dow||0]}</span>`:`<span class="tag tag-room">Day ${c.dom||1}</span>`): ''}
               ${c.months&&c.freq==='daily'?`<span class="tag tag-seasonal">Jun–Sep</span>`:''}
             </div>
             ${(c.freq==='weekly'||c.freq==='monthly')?`<button class="mg-sched-link" onclick="toggleSched('${c.id}')">
@@ -739,8 +801,13 @@ function renderManage(){
         html+=`</div></div>`;
       }
       if (isOpen&&c.freq==='monthly'){
-        html+=`<div class="sched-editor"><label>Day of month (1–28):</label><div class="dom-grid">`;
-        for(let d=1;d<=28;d++) html+=`<button class="dom-btn${c.dom===d?' sel':''}" onclick="setDOM('${c.id}',${d})">${d}</button>`;
+        const wk = c.week||1;
+        const wkDay = c.dow!==undefined ? c.dow : 0;
+        const wkLabels = ['1st','2nd','3rd','4th'];
+        html+=`<div class="sched-editor"><label>Which week of the month:</label><div class="dow-grid">`;
+        wkLabels.forEach((lbl,i)=>{ html+=`<button class="dow-btn${wk===(i+1)?' sel':''}" onclick="setWeek('${c.id}',${i+1})">${lbl}</button>`; });
+        html+=`</div><label style="margin-top:8px">Day of week:</label><div class="dow-grid">`;
+        DOW_NAMES.forEach((dn,i)=>{ html+=`<button class="dow-btn${wkDay===i?' sel':''}" onclick="setDOW('${c.id}',${i})">${dn}</button>`; });
         html+=`</div></div>`;
       }
       html+=`</div>`;
@@ -770,7 +837,12 @@ function renderManage(){
     const sf=document.getElementById('add-form-sched');
     if (sf){
       if (fv==='weekly') sf.innerHTML=`<div class="sched-editor" style="border:none;margin:0;padding:0"><label>Day of week:</label><div class="dow-grid">`+DOW_NAMES.map((dn,i)=>`<button type="button" class="dow-btn${i===addDOW?' sel':''}" onclick="pickDOW(${i})">${dn}</button>`).join('')+`</div></div>`;
-      else if (fv==='monthly') sf.innerHTML=`<div class="sched-editor" style="border:none;margin:0;padding:0"><label>Day of month:</label><div class="dom-grid">`+Array.from({length:28},(_,i)=>i+1).map(d=>`<button type="button" class="dom-btn${d===addDOM?' sel':''}" onclick="pickDOM(${d})">${d}</button>`).join('')+`</div></div>`;
+      else if (fv==='monthly') sf.innerHTML=`<div class="sched-editor" style="border:none;margin:0;padding:0">
+        <label>Which week of the month:</label><div class="dow-grid">`+
+        ['1st','2nd','3rd','4th'].map((lbl,i)=>`<button type="button" class="dow-btn${i+1===addWeek?' sel':''}" onclick="pickWeek(${i+1})">${lbl}</button>`).join('')+
+        `</div><label style="margin-top:8px">Day of week:</label><div class="dow-grid">`+
+        DOW_NAMES.map((dn,i)=>`<button type="button" class="dow-btn${i===addDOW?' sel':''}" onclick="pickDOW(${i})">${dn}</button>`).join('')+
+        `</div></div>`;
       else sf.innerHTML='';
     }
   }
@@ -781,8 +853,10 @@ function toggleEnabled(id){ const c=getChores().find(x=>x.id===id); if(c){c.enab
 function deleteChore(id){ st.chores=st.chores.filter(c=>c.id!==id); save(); renderManage(); }
 function setDOW(id,dow){ const c=getChores().find(x=>x.id===id); if(c){c.dow=dow;save();renderManage();} }
 function setDOM(id,dom){ const c=getChores().find(x=>x.id===id); if(c){c.dom=dom;save();renderManage();} }
+function setWeek(id,week){ const c=getChores().find(x=>x.id===id); if(c){c.week=week;save();renderManage();} }
 function pickDOW(i){ addDOW=i; renderManage(); }
 function pickDOM(d){ addDOM=d; renderManage(); }
+function pickWeek(w){ addWeek=w; renderManage(); }
 function submitAdd(){
   const name=(document.getElementById('add-name')||{}).value||'';
   if (!name.trim()) return;
@@ -790,8 +864,8 @@ function submitAdd(){
   const freq=(document.getElementById('add-freq')||{}).value||'daily';
   const c={id:'u'+Date.now(),name:name.trim(),room,freq,enabled:true};
   if (freq==='weekly') c.dow=addDOW;
-  if (freq==='monthly') c.dom=addDOM;
-  st.chores.push(c); showAdd=false; addDOW=0; addDOM=1; save(); renderManage();
+  if (freq==='monthly'){ c.week=addWeek; c.dow=addDOW; }
+  st.chores.push(c); showAdd=false; addDOW=0; addDOM=1; addWeek=1; save(); renderManage();
 }
 
 renderToday();
